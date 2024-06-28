@@ -44,13 +44,20 @@ func TestGetCityFull2(t *testing.T) {
 	}
 }
 
-func TestGetCityFull(t *testing.T) {
-	SetEndian(LITTLE)
-	_, err := ReadDBToMemory(path)
+func TestReadDBToMemory(t *testing.T) {
+	bo, err := DetectEndian()
 	if err != nil {
 		t.Fatalf("%s %v", path, err)
 	}
+	SetEndian(bo == binary.LittleEndian)
 
+	_, err = ReadDBToMemory(path)
+	if err != nil {
+		t.Fatalf("%s %v", path, err)
+	}
+}
+
+func TestGetCityFull(t *testing.T) {
 	// более-менее валидные адреса можно взять с https://www.4it.me/getlistip?cityid=5138
 	tcs := []string{
 		"188.255.70.88",
@@ -90,6 +97,26 @@ func TestGetCityFull(t *testing.T) {
 
 		fmt.Printf("%s\n", enc)
 		//os.Exit(0)
+	}
+}
+
+func TestGetCityFullFail(t *testing.T) {
+	testCases := []struct {
+		ip   string
+		want string
+	}{
+		{"94.43.39.192", "region data is nil"},
+		{"212.58.114.163", "region data is nil"},
+		{"5.152.111.87", "region data is nil"},
+		{"83.97.109.147", "cannot read country data"},
+		{"5.59.146.102", "cannot read country data"},
+		{"77.232.146.61", "cannot read country data"},
+	}
+	for _, tc := range testCases {
+		_, err := GetCityFull(tc.ip)
+		if err == nil {
+			t.Fatalf("loopback ip should be detected")
+		}
 	}
 }
 
