@@ -464,7 +464,6 @@ func ToMemory(f *bytes.Reader) (bool, error) {
 	return true, nil
 }
 
-
 // ReadDBToMemory Reads the whole DB to the memory
 func ReadDBToMemory(path string) (bool, error) {
 	f, err := os.Open(path)
@@ -679,6 +678,14 @@ func parseFullCity(seek uint32) (*Full, error) {
 			return nil, fmt.Errorf("cannot read region data")
 		}
 
+		if r, ok := region["id"]; ok {
+			if r == nil {
+				return nil, fmt.Errorf("region data is nil")
+			}
+		} else {
+			return nil, fmt.Errorf("region data not found")
+		}
+
 		full.Region = &Region{
 			ID:     int((region["id"]).(uint32)),
 			ISO:    fmt.Sprintf("%s", region["iso"]),
@@ -690,6 +697,15 @@ func parseFullCity(seek uint32) (*Full, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to read country")
 		}
+
+		if c, ok := country["id"]; ok {
+			if c == nil {
+				return nil, fmt.Errorf("country data is nil")
+			}
+		} else {
+			return nil, fmt.Errorf("country data not found")
+		}
+
 		full.Country = &Country{
 			ID:     country["id"].(uint8),
 			ISO:    fmt.Sprintf("%s", country["iso"]),
@@ -705,8 +721,14 @@ func readData(seek uint32, max uint16, packType int) (map[string]interface{}, er
 	var raw []byte
 	if (seek > 0) && (max > 0) {
 		if packType == 1 {
+			if len(Regions) < int(seek+uint32(max)) {
+				return nil, fmt.Errorf("cannot unpack region")
+			}
 			raw = Regions[seek : seek+uint32(max)]
 		} else {
+			if len(Cities) < int(seek+uint32(max)) {
+				return nil, fmt.Errorf("cannot unpack city")
+			}
 			raw = Cities[seek : seek+uint32(max)]
 		}
 	}
