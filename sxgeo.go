@@ -678,12 +678,8 @@ func parseFullCity(seek uint32) (*Full, error) {
 			return nil, fmt.Errorf("cannot read region data")
 		}
 
-		if r, ok := region["id"]; ok {
-			if r == nil {
-				return nil, fmt.Errorf("region data is nil")
-			}
-		} else {
-			return nil, fmt.Errorf("region data not found")
+		if r := region["id"]; r == nil {
+			return nil, fmt.Errorf("region data is nil")
 		}
 
 		full.Region = &Region{
@@ -698,12 +694,8 @@ func parseFullCity(seek uint32) (*Full, error) {
 			return nil, fmt.Errorf("failed to read country")
 		}
 
-		if c, ok := country["id"]; ok {
-			if c == nil {
-				return nil, fmt.Errorf("country data is nil")
-			}
-		} else {
-			return nil, fmt.Errorf("country data not found")
+		if c := country["id"]; c == nil {
+			return nil, fmt.Errorf("country data is nil")
 		}
 
 		full.Country = &Country{
